@@ -1,0 +1,628 @@
+<!doctype html>
+<html lang="en" class="nojs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="robots" content="noindex">
+<meta name="referrer" content="no-referrer">
+<title>The layer in the middle · Webfuse</title>
+<meta name="description" content="Webfuse adds a layer to the website your customer already has open, injected in transit, so your voice agent can point, read, fill and click inside the page while the site itself stays unchanged.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230b0f16'/%3E%3Cpath d='M16 5.5l10.5 5.2L16 16 5.5 10.7z' fill='%235ee6ff'/%3E%3Cpath d='M5.5 16L16 21.3 26.5 16' fill='none' stroke='%238b7bff' stroke-width='2.4' stroke-linejoin='round' stroke-linecap='round'/%3E%3Cpath d='M5.5 21.2L16 26.5l10.5-5.3' fill='none' stroke='%238b7bff' stroke-opacity='.5' stroke-width='2.4' stroke-linejoin='round' stroke-linecap='round'/%3E%3C/svg%3E">
+<script>document.documentElement.className = 'js';</script>
+<style>
+:root{
+  --bg:#05070b;--panel:#0e131c;--panel2:#0a0e15;--line:#1a2230;--line2:#26314a;
+  --text:#e9eef6;--soft:#b9c3d4;--mute:#97a3b7;--dim:#66748c;
+  --cyan:#5ee6ff;--violet:#8b7bff;--amber:#ffb547;--green:#3ddc97;
+  --sans:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,"SF Mono","JetBrains Mono",Menlo,Consolas,"Liberation Mono",monospace;
+  --ease:cubic-bezier(.65,0,.25,1);
+  --out:cubic-bezier(.2,.7,.2,1);
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 var(--sans);-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:
+  radial-gradient(900px 640px at 74% 30%,rgba(94,230,255,.07),transparent 62%),
+  radial-gradient(760px 560px at 6% 4%,rgba(139,123,255,.085),transparent 62%),
+  radial-gradient(1100px 700px at 50% 118%,rgba(139,123,255,.06),transparent 60%)}
+p,h1,h2,h3{margin:0}
+a{color:var(--cyan);text-decoration:none}
+a:hover{text-decoration:underline}
+a:focus-visible{outline:2px solid var(--cyan);outline-offset:3px;border-radius:4px}
+.grad{background:linear-gradient(92deg,var(--cyan) 8%,var(--violet) 88%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.nw{white-space:nowrap}
+.eyebrow{font:600 13px/1.3 var(--mono);letter-spacing:.04em;color:var(--cyan);margin:0 0 18px}
+.eyebrow::before{content:"";display:inline-block;width:18px;height:1px;margin:0 10px 4px 0;vertical-align:middle;background:currentColor;opacity:.7}
+
+/* ---------- A: the layer ---------- */
+.hero{position:relative;min-height:100vh;display:flex;flex-direction:column;padding:0 64px;overflow-x:clip}
+.brand{display:flex;align-items:center;gap:10px;height:76px;width:100%;max-width:1312px;margin:0 auto;font-weight:650;font-size:15px;letter-spacing:-.01em}
+.brand svg{display:block}
+.hero-grid{flex:1;display:grid;grid-template-columns:minmax(0,500px) minmax(0,1fr);align-items:center;gap:20px;width:100%;max-width:1312px;margin:0 auto;padding-bottom:44px}
+.hero-copy{position:relative;z-index:1;animation:rise .9s var(--out) .05s both}
+h1{font-size:clamp(40px,4vw,58px);line-height:1.05;letter-spacing:-.035em;font-weight:750;margin:0 0 24px}
+.lede{font-size:18.5px;line-height:1.62;color:var(--soft);max-width:468px}
+@keyframes rise{from{opacity:0;transform:translateY(16px)}}
+@keyframes fade{from{opacity:0}}
+@keyframes pop{from{opacity:0;transform:scale(.6)}}
+
+/* the drawing is a fixed 790 x 640 stage, scaled to fit its column */
+.stage-wrap{--s:1;position:relative;height:calc(640px * var(--s))}
+.explode{position:absolute;left:0;top:0;width:790px;height:640px;margin:0;transform:scale(var(--s));transform-origin:0 0}
+.ex-float{position:absolute;inset:0;perspective:1700px;perspective-origin:380px 282px;animation:float 7s ease-in-out 3.1s infinite}
+@keyframes float{50%{transform:translateY(-9px)}}
+.ex-scene{position:absolute;left:60px;top:250px;width:460px;height:300px;transform-style:preserve-3d;transform:rotateX(54deg) rotateZ(-30deg);animation:sceneIn 1.2s var(--ease) .1s both}
+@keyframes sceneIn{from{transform:rotateX(0deg) rotateZ(0deg)}}
+.plane{position:absolute;left:0;top:0;width:460px;height:300px}
+.p2{transform-style:preserve-3d;transform:translateZ(140px);animation:liftP2 1.2s var(--ease) .1s both}
+.p3{left:96px;top:-66px;width:272px;height:188px;transform:translateZ(262px);animation:liftP3 1.2s var(--ease) .1s both,fade .45s ease .3s both}
+@keyframes liftP2{from{transform:translateZ(1px)}}
+@keyframes liftP3{from{transform:translateZ(2px)}}
+
+/* plane 1: the website */
+.site{position:absolute;inset:0;border-radius:14px;overflow:hidden;background:#eef1f6;color:#1b2333;box-shadow:0 46px 80px -26px rgba(0,0,0,.95),0 0 0 1px rgba(255,255,255,.07)}
+.site-bar{height:46px;display:flex;align-items:center;gap:10px;padding:0 18px;background:#17325c}
+.site-logo{flex:none;width:18px;height:18px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#ffe08a,#f59e0b 70%)}
+.site-title{color:#fff;font-size:14px;font-weight:600;white-space:nowrap}
+.site-body{padding:16px 20px 0}
+.site-steps{display:flex;gap:6px;height:4px;margin-bottom:16px}
+.site-steps i{flex:0 0 54px;border-radius:2px;background:#d3d9e3}
+.site-steps i:first-child{background:#17325c}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px 18px}
+.lbl{display:block;height:14px;margin:0 0 5px;font-size:11.5px;line-height:14px;font-weight:600;color:#52607a;white-space:nowrap}
+.inp{position:relative;height:36px;border:1px solid #c6cfdc;border-radius:7px;background:#fff;display:flex;align-items:center;padding:0 10px;font-size:13.5px;color:#1b2333}
+.site-foot{display:flex;justify-content:flex-end;margin-top:20px}
+.site-btn{height:32px;padding:0 18px;border-radius:8px;background:#17325c;color:#fff;font-size:13px;font-weight:600;line-height:32px}
+
+/* plane 2: the Webfuse layer, aligned with plane 1 because it repeats its layout */
+.glass{position:absolute;inset:0;border-radius:14px;border:1px solid rgba(94,230,255,.3);animation:fade .6s ease .75s both;background:
+  radial-gradient(rgba(94,230,255,.2) 1px,transparent 1.5px) 0 0/18px 18px,
+  linear-gradient(160deg,rgba(94,230,255,.1),rgba(139,123,255,.06) 55%,rgba(94,230,255,.04))}
+.glass::after{content:"";position:absolute;inset:-1px;border-radius:15px;border:1.5px solid rgba(94,230,255,.8);box-shadow:0 0 50px rgba(94,230,255,.3),inset 0 0 70px rgba(94,230,255,.12);animation:fade .7s ease 1.2s both}
+.wire{background:none;box-shadow:none;overflow:visible}
+.wire .site-bar{background:none}
+.wire .fld,.wire .site-btn{visibility:hidden}
+.wire .f-tgt{visibility:visible;animation:fade .5s ease 1.1s both}
+.wire .lbl{width:86px;height:5px;margin:5px 0 9px;border-radius:3px;background:rgba(94,230,255,.22)}
+.tgt{border:0;padding:0;background:rgba(4,11,19,.86)}
+.ring{position:absolute;inset:-5px;border-radius:11px;border:2px solid var(--cyan);box-shadow:0 0 0 4px rgba(94,230,255,.14),0 0 26px rgba(94,230,255,.55);animation:ringIn .45s var(--out) 1.4s both}
+.ring::after{content:"";position:absolute;inset:-2px;border-radius:12px;border:2px solid var(--cyan);opacity:0;animation:pulse 2.8s ease-out 3.3s infinite}
+@keyframes ringIn{from{opacity:0;transform:scale(1.16)}}
+@keyframes pulse{0%{opacity:.6;transform:scale(1)}70%,100%{opacity:0;transform:scale(1.1,1.45)}}
+.ghost-w{position:absolute;left:11px;top:0;bottom:0;display:flex;align-items:center;font:600 14.5px/1 var(--mono)}
+.ghost-val{font:inherit;color:#d4f8ff;text-shadow:0 0 12px rgba(94,230,255,.6);white-space:nowrap}
+.ghost-val span{animation:fade .01s linear both;animation-delay:calc(2.1s + var(--i) * 50ms)}
+.caret{position:absolute;left:0;top:50%;width:2px;height:18px;margin-top:-9px;background:var(--cyan);box-shadow:0 0 8px var(--cyan);opacity:0;animation:caretMove .45s steps(9,start) 2.1s both,caretLife 1.15s linear 2.06s both}
+@keyframes caretMove{from{transform:translateX(0)}to{transform:translateX(9ch)}}
+@keyframes caretLife{0%{opacity:0}3%,78%{opacity:1}100%{opacity:0}}
+.src-w{position:absolute;right:7px;top:50%;margin-top:-9.5px;animation:pop .3s var(--out) 2.55s both}
+.src-chip{height:19px;padding:0 7px;border-radius:5px;background:var(--cyan);color:#03131a;font:700 10.5px/19px var(--mono);white-space:nowrap}
+.ptr{position:absolute;left:76px;top:28px;width:28px;height:28px;animation:ptrIn .7s cubic-bezier(.25,.7,.2,1) 1.35s both}
+.ptr svg{display:block;filter:drop-shadow(0 3px 4px rgba(0,0,0,.5))}
+.ptr::before{content:"";position:absolute;left:-8px;top:-8px;width:24px;height:24px;border-radius:50%;border:2px solid var(--cyan);opacity:0;animation:ripple .6s ease-out 2.05s both}
+@keyframes ptrIn{from{opacity:0;transform:translate(130px,-96px)}}
+@keyframes ripple{0%{opacity:1;transform:scale(.3)}100%{opacity:0;transform:scale(1.7)}}
+.nudge-w{position:absolute;right:-8px;top:calc(100% + 15px);transform-origin:80% 0;animation:pop .32s var(--out) 2.62s both}
+.nudge{position:relative;white-space:nowrap;padding:6px 12px 6px 10px;border-radius:9px;background:#1c150a;border:1px solid rgba(255,181,71,.85);color:#ffdba3;font:600 12px/1.25 var(--sans);box-shadow:0 0 26px rgba(255,181,71,.3)}
+.nudge::before{content:"";display:inline-block;width:6px;height:6px;margin:0 7px 1px 0;border-radius:50%;background:var(--amber);box-shadow:0 0 8px var(--amber)}
+.nudge::after{content:"";position:absolute;right:50px;top:-5px;width:8px;height:8px;background:#1c150a;border-left:1px solid rgba(255,181,71,.85);border-top:1px solid rgba(255,181,71,.85);transform:rotate(45deg)}
+.beam{position:absolute;pointer-events:none;animation:fade .6s ease 1.3s both}
+.beam-f{left:239px;top:137px;width:201px;height:136px;transform-origin:50% 0;transform:rotateX(-90deg);background:linear-gradient(180deg,rgba(94,230,255,.3),rgba(94,230,255,0))}
+.beam-l{left:239px;top:101px;width:136px;height:36px;transform-origin:0 50%;transform:rotateY(90deg);background:linear-gradient(90deg,rgba(94,230,255,.18),rgba(94,230,255,0))}
+
+/* plane 3: the customer, on a call */
+.call{position:absolute;inset:0;border-radius:16px;padding:12px 14px;display:flex;flex-direction:column;gap:7px;background:linear-gradient(180deg,#161d2c,#0c111a);border:1px solid rgba(139,123,255,.6);box-shadow:0 0 50px -10px rgba(139,123,255,.55)}
+.call-top{display:flex;align-items:center;gap:8px;height:18px;font:600 10.5px/1 var(--mono);color:var(--mute)}
+.call-top .dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green)}
+.wave{margin-left:auto;display:flex;align-items:center;gap:2px;height:14px}
+.wave i{display:block;width:2px;height:14px;border-radius:1px;background:var(--violet);transform:scaleY(.35);animation:wave 1.1s ease-in-out 2.7s infinite}
+.wave i:nth-child(2){animation-delay:2.85s}.wave i:nth-child(3){animation-delay:2.78s}.wave i:nth-child(4){animation-delay:2.95s}.wave i:nth-child(5){animation-delay:2.82s}
+@keyframes wave{50%{transform:scaleY(1)}}
+.msg{display:flex;flex-direction:column;gap:2px}
+.who{font:600 9.5px/1.2 var(--mono);color:var(--dim)}
+.call .who{font-size:10px}
+.call .bub{font-size:13px}
+.m-caller{align-items:flex-start}
+.m-agent{align-items:flex-end}
+.call .m-caller{animation:rise .4s var(--out) .55s both}
+.call .m-agent{animation:rise .4s var(--out) 2.62s both}
+.bub{max-width:88%;padding:6px 10px;border-radius:11px;font-size:12.5px;line-height:1.36}
+.m-caller .bub{background:#1f2839;color:#e7ecf4;border-bottom-left-radius:4px}
+.m-agent .bub{background:rgba(139,123,255,.25);color:#efecff;border-bottom-right-radius:4px}
+
+/* labels: flat callouts drawn over the scene, anchored to the plane corners */
+.ex-labels{position:absolute;inset:0;pointer-events:none}
+.lab{position:absolute;left:var(--ax);top:var(--ay);display:flex;align-items:center;transform:translateY(-50%);--c:#cfd8e5}
+.lab1{--ax:566px;--ay:410px;--lead:25px}
+.lab2{--ax:575px;--ay:296px;--lead:16px;--c:var(--cyan)}
+.lab3{--ax:348px;--ay:84px;--lead:243px;--c:#b4a9ff}
+.lab-dot{flex:none;width:9px;height:9px;margin-left:-4.5px;border-radius:50%;background:var(--c);box-shadow:0 0 0 3px rgba(5,7,11,.9),0 0 12px var(--c);animation:pop .35s var(--out) both}
+.lab-line{flex:none;width:var(--lead);height:1px;margin:0 8px 0 3px;background:linear-gradient(90deg,var(--c),rgba(207,216,229,.3));transform-origin:0 50%;animation:draw .45s var(--out) both}
+.lab-box{display:flex;align-items:flex-start;gap:9px;width:184px;animation:fade .45s ease both}
+.lab-n{flex:none;display:grid;place-items:center;width:20px;height:20px;margin-top:-1px;border-radius:50%;font:700 11px/1 var(--mono);color:#05070b;background:var(--c)}
+.lab-t{font-size:13.5px;line-height:1.32;font-weight:600;color:#e5ebf3}
+.lab1>*{animation-delay:1.3s}.lab2>*{animation-delay:1.45s}.lab3>*{animation-delay:1.6s}
+.lab1 .lab-box{animation-delay:1.45s}.lab2 .lab-box{animation-delay:1.6s}.lab3 .lab-box{animation-delay:1.75s}
+@keyframes draw{from{transform:scaleX(0)}}
+.hero.off .ex-float,.hero.off .wave i,.hero.off .ring::after{animation-play-state:paused}
+/* replay (data-fde-beat="greeting"): .rewind folds the stack back, removing it replays the intro */
+.hero.rewind .ex-scene{animation:sceneOut .6s var(--ease) .15s both}
+.hero.rewind .p2{animation:liftOut2 .6s var(--ease) .15s both}
+.hero.rewind .p3{animation:liftOut3 .6s var(--ease) .15s both,fadeOut .3s ease both}
+.hero.rewind .glass,.hero.rewind .glass::after,.hero.rewind .beam,.hero.rewind .f-tgt,.hero.rewind .ring,.hero.rewind .ghost-val span,.hero.rewind .caret,.hero.rewind .src-w,.hero.rewind .ptr,.hero.rewind .nudge-w,.hero.rewind .lab>*,.hero.rewind .call .msg{animation:fadeOut .3s ease both}
+@keyframes sceneOut{to{transform:rotateX(0deg) rotateZ(0deg)}}
+@keyframes liftOut2{to{transform:translateZ(1px)}}
+@keyframes liftOut3{to{transform:translateZ(2px)}}
+@keyframes fadeOut{to{opacity:0}}
+
+/* ---------- shared section frame ---------- */
+.band{position:relative;padding:88px 64px}
+.wrap{max-width:1120px;margin:0 auto}
+h2,.h2-tail{font-size:clamp(30px,3.35vw,48px);line-height:1.09;letter-spacing:-.03em;font-weight:740}
+hgroup{margin:0}
+.h2-tail{width:fit-content}
+h3{font-size:20px;line-height:1.3;letter-spacing:-.012em;font-weight:680}
+.card{position:relative;border-radius:20px;padding:22px 22px 24px;background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--line)}
+.ill{position:relative;border-radius:13px;background:#090c13;border:1px solid var(--line);overflow:hidden}
+
+/* ---------- B: the position ---------- */
+.spectrum{display:grid;grid-template-columns:1fr 1.16fr 1fr;gap:22px;margin-top:46px;align-items:stretch}
+.sp h3{margin:20px 0 7px}
+.sp-t{color:var(--mute);font-size:15px;line-height:1.56}
+.sp .ill{height:178px}
+.vo{display:flex;flex-direction:column;justify-content:center;gap:10px;padding:14px}
+.vo .msg{transition:opacity .45s ease,transform .45s var(--out)}
+.vo .bub{font-size:13px;max-width:92%}
+.js .spectrum:not(.s1) .vo .m-agent,.js .spectrum:not(.s2) .vo .m-caller{opacity:0;transform:translateY(8px)}
+.sp-aug{border-color:#1f2a3b;transform:translateY(-12px);transition:transform .6s var(--out)}
+.sp-aug::before,.sp-aug::after{content:"";position:absolute;inset:-1px;border-radius:21px;pointer-events:none;transition:opacity .6s ease}
+.sp-aug::before{box-shadow:0 30px 80px -30px rgba(94,230,255,.5),0 0 0 4px rgba(94,230,255,.06)}
+.sp-aug::after{border:1px solid rgba(94,230,255,.55)}
+.js .spectrum:not(.s3) .sp-aug{transform:none}
+.js .spectrum:not(.s3) .sp-aug::before,.js .spectrum:not(.s3) .sp-aug::after{opacity:0}
+.sp-tag{position:absolute;z-index:2;top:-12px;left:22px;height:24px;padding:0 11px;border-radius:999px;background:var(--cyan);color:#04131a;font:700 11.5px/24px var(--mono);letter-spacing:.02em;box-shadow:0 6px 24px -6px rgba(94,230,255,.7)}
+.mf{padding:14px 16px}
+.mf-bar{height:12px;width:46%;border-radius:4px;background:#17325c;margin-bottom:14px}
+.mf-f{margin-bottom:10px}
+.mf-f i{display:block;width:34%;height:6px;border-radius:3px;background:#b8c2d2;margin-bottom:5px}
+.mf-f b{position:relative;display:block;height:24px;border-radius:5px;background:#fff;border:1px solid #c9d1de}
+.aug{background:#e9edf3}
+.mf-f.mark b{border-color:transparent}
+.mf-ring{position:absolute;inset:-4px;border-radius:8px;border:2px solid #22b8dc;box-shadow:0 0 0 3px rgba(94,230,255,.2),0 0 18px rgba(94,230,255,.55);transition:opacity .45s ease .1s,transform .45s var(--out) .1s}
+.mf-ghost{position:absolute;left:8px;top:8px;width:42%;height:7px;border-radius:4px;background:rgba(34,184,220,.4);transition:opacity .4s ease .45s}
+.mf-ptr{position:absolute;left:58%;top:95px;width:22px;height:22px;transition:opacity .5s ease .1s,transform .6s cubic-bezier(.25,.7,.2,1) .1s}
+.mf-ptr svg{display:block;filter:drop-shadow(0 2px 3px rgba(0,0,0,.35))}
+.js .spectrum:not(.s3) .mf-ring{opacity:0;transform:scale(1.12)}
+.js .spectrum:not(.s3) .mf-ghost{opacity:0}
+.js .spectrum:not(.s3) .mf-ptr{opacity:0;transform:translate(60px,-40px)}
+.spectrum.snap,.spectrum.snap *,.spectrum.snap *::before,.spectrum.snap *::after{transition:none!important}
+.alone .mf-bar{background:#243049}
+.alone .mf-f{margin-bottom:9px;margin-right:14px}
+.alone .mf-f i{background:#283248}
+.alone .mf-f b{height:20px;background:#0f141e;border-color:#232d41}
+.alone::after{content:"";position:absolute;left:0;right:0;bottom:0;height:54px;background:linear-gradient(rgba(9,12,19,0),#090c13)}
+.scroll{position:absolute;right:7px;top:12px;bottom:12px;width:3px;border-radius:2px;background:#151c2a}
+.scroll::after{content:"";position:absolute;left:0;right:0;top:0;height:22%;border-radius:2px;background:#33405a}
+.pdf{position:absolute;right:20px;top:14px;width:38px;height:46px;border-radius:5px;background:#1a2232;border:1px solid #2b3650;transform:rotate(6deg);box-shadow:0 8px 18px -6px rgba(0,0,0,.6)}
+.pdf::before{content:"";position:absolute;left:7px;right:7px;top:9px;height:4px;border-radius:2px;background:#ff6b7a;opacity:.75}
+.pdf::after{content:"";position:absolute;left:7px;right:11px;top:18px;height:3px;border-radius:2px;background:#3a4660;box-shadow:0 7px 0 #3a4660,0 14px 0 #3a4660}
+
+/* ---------- C: how it fits ---------- */
+.steps{list-style:none;margin:48px 0 0;padding:0;display:grid;grid-template-columns:repeat(3,1fr);gap:22px;counter-reset:st}
+.step{counter-increment:st}
+.step .card{height:100%;transition:opacity .55s ease,transform .55s var(--out)}
+.step:nth-child(2) .card{transition-delay:.12s}.step:nth-child(3) .card{transition-delay:.24s}
+.js .steps:not(.in) .step .card{opacity:0;transform:translateY(18px)}
+.steps.beat .step .card{transition-delay:0s}
+.step.dim .card{opacity:.36}
+.step.lit .card{transform:translateY(-6px)}
+.step .card::after{content:"";position:absolute;inset:-1px;border-radius:21px;pointer-events:none;border:1px solid rgba(94,230,255,.55);box-shadow:0 26px 70px -30px rgba(94,230,255,.55);opacity:0;transition:opacity .5s ease}
+.step.lit .card::after{opacity:1}
+.step.lit .card::before{box-shadow:0 0 0 4px rgba(94,230,255,.14),0 0 20px rgba(94,230,255,.55)}
+.step.lit .linkb{animation:pop .45s var(--out) .2s both}
+.step.lit .arrow{animation:draw .4s var(--out) both;transform-origin:0 50%}
+.step.lit .win-layer{animation:fade .5s ease .15s both}
+.step.lit .win-hl{animation:ringIn .45s var(--out) .5s both}
+.step.lit .tools span{animation:pop .3s var(--out) both}
+.step.lit .tools span:nth-child(2){animation-delay:.12s}.step.lit .tools span:nth-child(3){animation-delay:.24s}.step.lit .tools span:nth-child(4){animation-delay:.36s}
+.step .card::before{content:counter(st);display:grid;place-items:center;width:30px;height:30px;margin-bottom:16px;border-radius:50%;font:700 13px/1 var(--mono);color:#05070b;background:linear-gradient(135deg,var(--cyan),var(--violet))}
+.step h3{margin:18px 0 7px}
+.step p{color:var(--mute);font-size:15px;line-height:1.56}
+.step .ill{height:120px;display:flex;align-items:center;justify-content:center;gap:12px;padding:0 14px}
+.pill{display:inline-flex;align-items:center;gap:7px;height:30px;padding:0 11px;border-radius:999px;border:1px solid var(--line2);background:#111826;color:#cdd6e4;font:600 11px/1 var(--mono);white-space:nowrap}
+.pill svg,.linkb svg{flex:none;display:block}
+.arrow{flex:none;position:relative;width:30px;height:1px;background:linear-gradient(90deg,rgba(94,230,255,.1),var(--cyan))}
+.arrow::after{content:"";position:absolute;right:-1px;top:-3.5px;border:4px solid transparent;border-left:6px solid var(--cyan);border-right:0}
+.linkb{display:flex;align-items:center;gap:8px;height:36px;padding:0 12px;border-radius:12px 12px 12px 4px;background:rgba(139,123,255,.2);border:1px solid rgba(139,123,255,.45)}
+.linkb i{display:block;width:62px;height:6px;border-radius:3px;background:rgba(214,208,255,.55)}
+.win{position:relative;width:196px;height:90px;border-radius:9px;background:#e9edf3;overflow:hidden;box-shadow:0 14px 30px -12px rgba(0,0,0,.8)}
+.win-bar{height:16px;display:flex;align-items:center;gap:3px;padding:0 7px;background:#d3d9e3}
+.win-bar i{width:4px;height:4px;border-radius:50%;background:#9aa5b6}
+.win-bar b{margin-left:8px;width:84px;height:6px;border-radius:3px;background:#f3f5f8}
+.win-row{height:7px;margin:9px 12px 0;border-radius:3px;background:#c4ccd8}
+.win-row.s{width:40%}
+.win-layer{position:absolute;left:0;right:0;top:16px;bottom:0;border:1.5px solid rgba(94,230,255,.85);border-top:0;border-radius:0 0 9px 9px;background:rgba(94,230,255,.08);box-shadow:inset 0 0 22px rgba(94,230,255,.25)}
+.win-hl{position:absolute;left:7px;top:19px;width:112px;height:15px;border-radius:5px;border:1.5px solid #19aed3;box-shadow:0 0 0 3px rgba(94,230,255,.2),0 0 14px rgba(94,230,255,.5)}
+.win-ptr{position:absolute;left:104px;top:28px}
+.win-tag{position:absolute;right:6px;bottom:6px;height:14px;width:30px;border-radius:4px;background:var(--cyan);opacity:.85}
+.mcp{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:12px;width:100%}
+.node{display:grid;place-items:center;width:44px;height:44px;border-radius:12px;border:1px solid var(--line2);background:#111826}
+.node.agent{border-color:rgba(139,123,255,.6);box-shadow:0 0 22px -6px rgba(139,123,255,.7)}
+.node.page{border-color:rgba(94,230,255,.55);box-shadow:0 0 22px -6px rgba(94,230,255,.6)}
+.mcp-mid{display:flex;flex-direction:column;align-items:center;gap:8px}
+.mcp-mid b{font:700 10.5px/1 var(--mono);letter-spacing:.1em;color:var(--mute)}
+.mcp-line{width:100%;height:1px;background:linear-gradient(90deg,rgba(139,123,255,.75),rgba(94,230,255,.75))}
+.tools{display:grid;grid-template-columns:auto auto;gap:5px}
+.tools span{height:20px;padding:0 7px;border-radius:6px;border:1px solid rgba(94,230,255,.3);background:rgba(94,230,255,.07);color:#c2f0ff;font:600 10.5px/18px var(--mono);text-align:center}
+
+/* footer */
+.foot{padding:36px 64px 56px;border-top:1px solid var(--line)}
+.foot-in{max-width:1120px;margin:0 auto;display:flex;flex-wrap:wrap;align-items:center;gap:10px 28px;color:var(--dim);font-size:13.5px}
+.foot-l{display:flex;gap:22px}
+.foot-l a{font-weight:600}
+
+/* ---------- responsive ---------- */
+@media (min-width:1680px){
+  .brand,.hero-grid{max-width:1560px}
+  .hero-grid{grid-template-columns:minmax(0,560px) minmax(0,1fr)}
+  h1{font-size:66px}
+  .lede{font-size:20px;max-width:520px}
+}
+@media (max-width:1399px){
+  .hero{padding:0 48px}.band{padding-left:48px;padding-right:48px}.foot{padding-left:48px;padding-right:48px}
+  .hero-grid{grid-template-columns:minmax(0,470px) minmax(0,1fr)}
+  .stage-wrap{--s:.86}
+}
+@media (max-width:1219px){
+  .hero{padding:0 36px}
+  .hero-grid{grid-template-columns:minmax(0,430px) minmax(0,1fr)}
+  .stage-wrap{--s:.74}
+  .lede{font-size:17.5px}
+}
+@media (max-width:1079px){
+  .hero{min-height:0}
+  .hero-grid{grid-template-columns:minmax(0,1fr);gap:8px;padding-top:24px}
+  .hero-copy{max-width:640px}
+  .lede{max-width:600px}
+  .stage-wrap{--s:.92}
+  .explode{left:50%;margin-left:calc(-395px * var(--s))}
+  .spectrum{grid-template-columns:1fr;max-width:560px}
+  .sp-aug{transform:none}
+  .steps{grid-template-columns:1fr;max-width:560px}
+}
+@media (max-width:860px){.stage-wrap{--s:.82}}
+@media (max-width:760px){
+  .hero{padding:0 16px}.band{padding:64px 16px}.foot{padding:32px 16px 44px}
+  .brand{height:60px}
+  .hero-grid{padding:12px 0 40px;gap:30px}
+  h1{font-size:clamp(34px,10vw,44px);margin-bottom:18px}
+  .nw{white-space:normal}
+  .lede{font-size:17px}
+  .stage-wrap{height:auto}
+  .explode{position:static;width:auto;height:auto;margin:0;transform:none}
+  .ex-float{position:static;perspective:none;animation:none;display:flex;flex-direction:column;gap:10px}
+  .ex-scene,.ex-labels{display:contents}
+  .plane{position:relative;left:auto;top:auto;width:100%;height:auto;transform:none;animation:none}
+  .p1{order:2}.p2{order:4}.p3{order:6}
+  .lab{position:static;transform:none;margin-top:16px}
+  .lab1{order:1;margin-top:0}.lab2{order:3}.lab3{order:5}
+  .lab-dot,.lab-line{display:none}
+  .lab-box{width:auto}
+  .site,.call{position:relative;inset:auto}
+  .grid{grid-template-columns:1fr}
+  .site-body{padding-bottom:18px}
+  .wire{padding-bottom:60px}
+  .wire .site-bar{height:18px}
+  .wire .site-steps,.wire .site-foot,.wire .fld:not(.f-tgt){display:none}
+  .beam{display:none}
+  .hero.rewind .p2,.hero.rewind .p3{animation:none}
+  .call{gap:9px}
+  .sp .ill{height:172px}
+  .step h3,.sp h3{font-size:19px}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+}
+</style>
+</head>
+<body>
+<main>
+<section id="layer" class="hero">
+  <div class="brand">
+    <svg width="26" height="26" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="#111826"/><path d="M16 5.5l10.5 5.2L16 16 5.5 10.7z" fill="#5ee6ff"/><path d="M5.5 16L16 21.3 26.5 16" fill="none" stroke="#8b7bff" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/><path d="M5.5 21.2L16 26.5l10.5-5.3" fill="none" stroke="#8b7bff" stroke-opacity=".5" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/></svg>
+    <span>Webfuse</span>
+  </div>
+  <div class="hero-grid">
+    <div class="hero-copy">
+      <p class="eyebrow">Webfuse · the augmentation layer</p>
+      <h1><span class="nw">Keep the website.</span> <span class="grad nw">Add the layer.</span></h1>
+      <p class="lede">Your voice agent can talk about a web page. With Webfuse it works on the page: it points, reads, fills and clicks inside the site the customer already has open. The site itself does not change.</p>
+    </div>
+    <div class="stage-wrap">
+      <figure class="explode" id="explode" aria-label="Exploded view of three stacked planes: the website, the Webfuse layer and the customer on a call">
+        <div class="ex-float">
+          <div class="ex-scene">
+            <div class="plane p1">
+              <div class="site">
+                <div class="site-bar"><span class="site-logo" aria-hidden="true"></span><p class="site-title">Acme Energy · Move my contract</p></div>
+                <div class="site-body">
+                  <div class="site-steps" aria-hidden="true"><i></i><i></i><i></i></div>
+                  <div class="grid">
+                    <div class="fld"><label class="lbl">Customer number</label><div class="inp">4417 2290</div></div>
+                    <div class="fld"><label class="lbl">Meter number</label><div class="inp"></div></div>
+                    <div class="fld"><label class="lbl">Moving date</label><div class="inp"></div></div>
+                    <div class="fld"><label class="lbl">New address</label><div class="inp"></div></div>
+                  </div>
+                  <div class="site-foot"><p class="site-btn">Continue</p></div>
+                </div>
+              </div>
+            </div>
+            <div class="plane p2">
+              <div class="glass" aria-hidden="true"></div>
+              <div class="beam beam-f" aria-hidden="true"></div>
+              <div class="beam beam-l" aria-hidden="true"></div>
+              <div class="site wire">
+                <div class="site-bar"></div>
+                <div class="site-body">
+                  <div class="site-steps"></div>
+                  <div class="grid">
+                    <div class="fld"><div class="lbl"></div><div class="inp"></div></div>
+                    <div class="fld f-tgt"><div class="lbl"></div>
+                      <div class="inp tgt">
+                        <div class="ring" aria-hidden="true"></div>
+                        <div class="ghost-w"><p class="ghost-val"><span style="--i:0">E</span><span style="--i:1">-</span><span style="--i:2">2</span><span style="--i:3">0</span><span style="--i:4">4</span><span style="--i:5">1</span><span style="--i:6">-</span><span style="--i:7">8</span><span style="--i:8">8</span></p><i class="caret" aria-hidden="true"></i></div>
+                        <div class="src-w"><p class="src-chip">bill, page 2</p></div>
+                        <div class="ptr" aria-hidden="true"><svg viewBox="0 0 24 24" width="28" height="28"><path d="M4 2.5l15 10.2-6.6 1.3-3.7 6.4z" fill="#fff" stroke="#05070b" stroke-width="1.5" stroke-linejoin="round"/></svg></div>
+                        <div class="nudge-w"><p class="nudge">Meter number is on page 2 of your bill</p></div>
+                      </div>
+                    </div>
+                    <div class="fld"><div class="lbl"></div><div class="inp"></div></div>
+                    <div class="fld"><div class="lbl"></div><div class="inp"></div></div>
+                  </div>
+                  <div class="site-foot"><div class="site-btn"></div></div>
+                </div>
+              </div>
+            </div>
+            <div class="plane p3">
+              <div class="call">
+                <div class="call-top"><span class="dot" aria-hidden="true"></span><span>Call · 02:14</span><span class="wave" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span></div>
+                <div class="msg m-caller"><span class="who">Customer</span><p class="bub">Where do I enter my meter number?</p></div>
+                <div class="msg m-agent"><span class="who">Voice agent</span><p class="bub">Right here. I've marked the field for you.</p></div>
+              </div>
+            </div>
+          </div>
+          <div class="ex-labels">
+            <div class="lab lab1"><span class="lab-dot"></span><span class="lab-line"></span><div class="lab-box"><span class="lab-n" aria-hidden="true">1</span><p class="lab-t">The website, untouched</p></div></div>
+            <div class="lab lab2"><span class="lab-dot"></span><span class="lab-line"></span><div class="lab-box"><span class="lab-n" aria-hidden="true">2</span><p class="lab-t">The Webfuse layer, where the agent works</p></div></div>
+            <div class="lab lab3"><span class="lab-dot"></span><span class="lab-line"></span><div class="lab-box"><span class="lab-n" aria-hidden="true">3</span><p class="lab-t">The customer, on a call with your voice agent</p></div></div>
+          </div>
+        </div>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<section id="position" class="band">
+  <div class="wrap">
+    <p class="eyebrow">The position</p>
+    <hgroup>
+      <h2><span class="nw">Not a voice describing a screen.</span> <span class="nw">Not a caller on their own.</span></h2>
+      <p class="h2-tail grad">The layer in the middle.</p>
+    </hgroup>
+    <div class="spectrum">
+      <article class="card sp">
+        <div class="ill vo">
+          <div class="msg m-agent"><span class="who">Voice agent</span><p class="bub">Scroll down. Under the address, the third field on the left.</p></div>
+          <div class="msg m-caller"><span class="who">Caller</span><p class="bub">Which one is the third?</p></div>
+        </div>
+        <h3>Voice only</h3>
+        <p class="sp-t">The agent describes the screen from outside it. The caller translates every instruction back onto the page.</p>
+      </article>
+      <article class="card sp sp-aug">
+        <p class="sp-tag">Where Webfuse lives</p>
+        <div class="ill mf aug" aria-hidden="true">
+          <div class="mf-bar"></div>
+          <div class="mf-f"><i></i><b></b></div>
+          <div class="mf-f mark"><i></i><b><span class="mf-ring"></span><span class="mf-ghost"></span></b></div>
+          <div class="mf-f"><i></i><b></b></div>
+          <div class="mf-ptr"><svg viewBox="0 0 24 24" width="22" height="22"><path d="M4 2.5l15 10.2-6.6 1.3-3.7 6.4z" fill="#fff" stroke="#05070b" stroke-width="1.5" stroke-linejoin="round"/></svg></div>
+        </div>
+        <h3>Augmented</h3>
+        <p class="sp-t">The agent works inside the page the caller already has open. It points, fills and clicks, visibly, while it talks.</p>
+      </article>
+      <article class="card sp">
+        <div class="ill mf alone" aria-hidden="true">
+          <div class="mf-bar"></div>
+          <div class="mf-f"><i></i><b></b></div>
+          <div class="mf-f"><i></i><b></b></div>
+          <div class="mf-f"><i></i><b></b></div>
+          <div class="mf-f"><i></i><b></b></div>
+          <span class="pdf"></span>
+          <span class="scroll"></span>
+        </div>
+        <h3>On their own</h3>
+        <p class="sp-t">Twelve fields, a PDF of the bill, a phone on the shoulder. The caller does all of it, from memory.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section id="how" class="band">
+  <div class="wrap">
+    <p class="eyebrow">How it fits a voice deployment</p>
+    <h2>Three steps. No change to the site.</h2>
+    <div class="steps" role="list">
+      <div class="step" role="listitem"><div class="card">
+        <div class="ill" aria-hidden="true">
+          <span class="pill"><svg width="13" height="13" viewBox="0 0 24 24"><path d="M6.6 10.8a15.1 15.1 0 006.6 6.6l2.2-2.2a1 1 0 011-.25 11.4 11.4 0 003.6.57 1 1 0 011 1V20a1 1 0 01-1 1A17 17 0 013 4a1 1 0 011-1h3.5a1 1 0 011 1c0 1.25.2 2.45.57 3.57a1 1 0 01-.25 1z" fill="#3ddc97"/></svg>Live call</span>
+          <span class="arrow"></span>
+          <span class="linkb"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#d6d0ff" stroke-width="2.2" stroke-linecap="round"><path d="M10 14a4.5 4.5 0 006.4 0l3-3a4.5 4.5 0 00-6.4-6.4l-1.2 1.2"/><path d="M14 10a4.5 4.5 0 00-6.4 0l-3 3a4.5 4.5 0 006.4 6.4l1.2-1.2"/></svg><i></i></span>
+        </div>
+        <h3>Send a link</h3>
+        <p>During the call, your agent sends the caller a Webfuse link to the site they are on.</p>
+      </div></div>
+      <div class="step" role="listitem"><div class="card">
+        <div class="ill" aria-hidden="true">
+          <div class="win">
+            <div class="win-bar"><i></i><i></i><i></i><b></b></div>
+            <div class="win-row s"></div><div class="win-row"></div><div class="win-row"></div><div class="win-row s"></div>
+            <div class="win-layer"><span class="win-hl"></span><span class="win-tag"></span><svg class="win-ptr" viewBox="0 0 24 24" width="16" height="16"><path d="M4 2.5l15 10.2-6.6 1.3-3.7 6.4z" fill="#fff" stroke="#05070b" stroke-width="1.6" stroke-linejoin="round"/></svg></div>
+          </div>
+        </div>
+        <h3>Same site, one layer more</h3>
+        <p>The caller opens it in their own browser. The site loads through Webfuse, untouched, with the layer added in transit.</p>
+      </div></div>
+      <div class="step" role="listitem"><div class="card">
+        <div class="ill" aria-hidden="true">
+          <div class="mcp">
+            <span class="node agent"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#cbc3ff" stroke-width="2" stroke-linecap="round"><path d="M4 10v4M8 7v10M12 4v16M16 7v10M20 10v4"/></svg></span>
+            <span class="mcp-mid"><b>MCP</b><span class="mcp-line"></span><span class="tools"><span>snapshot</span><span>point</span><span>click</span><span>type</span></span></span>
+            <span class="node page"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a3efff" stroke-width="2" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M3 9h18"/></svg></span>
+          </div>
+        </div>
+        <h3>Your agent acts over MCP</h3>
+        <p>The Webfuse Session MCP Server gives your agent tools to see the page and act on it: snapshot, point, click, type.</p>
+      </div></div>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer class="foot">
+  <div class="foot-in">
+    <p>Webfuse by Surfly. Illustrative example: Acme Energy is invented for this page.</p>
+    <div class="foot-l"><a href="https://www.webfuse.com">webfuse.com</a><a href="https://dev.webfuse.com">Developer docs</a></div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  'use strict';
+  var root = document.documentElement;
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var hasIO = 'IntersectionObserver' in window;
+
+  // Timings in ms. Beat replays count from the moment data-fde-beat changes.
+  var T = {
+    heroFold: 900,                     // fold the stack back, then the intro replays (about 3 s)
+    autoSpectrum: [150, 750, 1350],    // on scroll: agent bubble, caller bubble, Augmented lights up
+    beatSpectrum: [300, 1500, 3000],   // data-fde-beat="position"
+    beatSteps: [1500, 4500, 7500, 10500], // data-fde-beat="how": step 1, 2, 3 light up, then settle
+    demoGrace: 1200                    // during a demo, scroll autoplay waits this long for a beat
+  };
+
+  function Seq() { this.ids = []; }
+  Seq.prototype.at = function (ms, fn) { this.ids.push(setTimeout(fn, ms)); };
+  Seq.prototype.clear = function () { this.ids.forEach(clearTimeout); this.ids = []; };
+  function each(list, fn) { Array.prototype.forEach.call(list, fn); }
+
+  // A: the hero replays from the stacked state.
+  var hero = document.getElementById('layer');
+  var heroSeq = new Seq();
+  function replayHero() {
+    heroSeq.clear();
+    hero.classList.remove('rewind');
+    void hero.offsetWidth;
+    hero.classList.add('rewind');
+    heroSeq.at(T.heroFold, function () { hero.classList.remove('rewind'); });
+  }
+
+  // B: agent bubble (s1), caller bubble (s2), then the Augmented card lights up (s3).
+  var spec = document.querySelector('.spectrum');
+  var specSeq = new Seq();
+  var STATES = ['s1', 's2', 's3'];
+  function playSpectrum(times) {
+    specSeq.clear();
+    spec.played = true;
+    spec.classList.add('snap');
+    STATES.forEach(function (c) { spec.classList.remove(c); });
+    void spec.offsetWidth;
+    spec.classList.remove('snap');
+    STATES.forEach(function (c, i) { specSeq.at(times[i], function () { spec.classList.add(c); }); });
+  }
+
+  // C: the steps fade in on scroll; a beat dims them and lights them up one by one.
+  var steps = document.querySelector('.steps');
+  var items = steps.querySelectorAll('.step');
+  var stepSeq = new Seq();
+  function revealSteps() { steps.played = true; steps.classList.add('in'); }
+  function playSteps(times) {
+    stepSeq.clear();
+    steps.played = true;
+    steps.classList.add('in', 'beat');
+    each(items, function (li) { li.classList.remove('lit'); li.classList.add('dim'); });
+    each(items, function (li, i) {
+      stepSeq.at(times[i], function () {
+        if (i > 0) { items[i - 1].classList.remove('lit'); }
+        li.classList.remove('dim');
+        li.classList.add('lit');
+      });
+    });
+    stepSeq.at(times[items.length], function () {
+      each(items, function (li) { li.classList.remove('lit', 'dim'); });
+      steps.classList.remove('beat');
+    });
+  }
+
+  if (reduce || !hasIO) {
+    STATES.forEach(function (c) { spec.classList.add(c); });
+    steps.classList.add('in');
+  } else {
+    // Play each section once when it comes into view, or right away if it already is.
+    // While a demo runs, wait briefly: the narration beat usually replays it anyway.
+    var auto = [
+      { el: spec, run: function () { playSpectrum(T.autoSpectrum); } },
+      { el: steps, run: revealSteps }
+    ];
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (!e.isIntersecting) { return; }
+        auto.forEach(function (a) {
+          if (a.el !== e.target || a.el.played) { return; }
+          io.unobserve(a.el);
+          if (root.hasAttribute('data-fde-beat')) {
+            setTimeout(function () { if (!a.el.played) { a.run(); } }, T.demoGrace);
+          } else {
+            a.run();
+          }
+        });
+      });
+    }, { threshold: 0.15 });
+    auto.forEach(function (a) { io.observe(a.el); });
+  }
+
+  // Pause the idle loops of the hero while it is off screen.
+  if (hasIO) {
+    new IntersectionObserver(function (entries) {
+      hero.classList.toggle('off', !entries[0].isIntersecting);
+    }).observe(hero);
+  }
+
+  // The demo sets data-fde-beat on <html> when a narrated beat starts.
+  if (!reduce && 'MutationObserver' in window) {
+    new MutationObserver(function () {
+      switch (root.getAttribute('data-fde-beat')) {
+        case 'greeting': replayHero(); break;
+        case 'position': playSpectrum(T.beatSpectrum); break;
+        case 'how': playSteps(T.beatSteps); break;
+        default: break;
+      }
+    }).observe(root, { attributes: true, attributeFilter: ['data-fde-beat'] });
+  }
+
+  // Fit the fixed 790 x 640 drawing into its column and the viewport height.
+  var wrap = document.getElementById('explode').parentNode;
+  function fit() {
+    if (window.innerWidth <= 760) { wrap.style.removeProperty('--s'); return; }
+    var room = window.innerWidth <= 1079 ? 1e9 : window.innerHeight - 140;
+    var s = Math.max(0.4, Math.min(1.25, wrap.clientWidth / 790, room / 640));
+    wrap.style.setProperty('--s', s.toFixed(3));
+  }
+  fit();
+  window.addEventListener('resize', fit);
+}());
+</script>
+</body>
+</html>
