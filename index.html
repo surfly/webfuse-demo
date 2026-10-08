@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<meta name="color-scheme" content="light dark">
+<title>Webfuse live demo</title>
+<link rel="stylesheet" href="style.css">
+<script src="config.js" defer></script>
+<script src="app.js" defer></script>
+</head>
+<body>
+<div class="page">
+  <header class="top">
+    <span class="wordmark">Webfuse</span>
+    <span class="tag">Live demo</span>
+  </header>
+
+  <main class="card" id="card">
+    <section class="state" data-state="ready" hidden>
+      <div class="persona" aria-hidden="true">
+        <span class="avatar">J</span>
+        <span class="persona-name">Jonas <span class="ai-pill">AI agent</span></span>
+      </div>
+      <h1 class="js-heading" tabindex="-1"><span id="greeting">Hi there.</span></h1>
+      <p class="lead">Jonas is ready to show you Webfuse, live on <strong class="js-domain">your website</strong>.</p>
+      <ol class="steps">
+        <li><span>A live browser session opens on <span class="js-domain">your website</span>.</span></li>
+        <li><span>Jonas drives it and explains each step as he goes.</span></li>
+        <li><span>It takes about two minutes. Turn your sound on.</span></li>
+      </ol>
+      <button id="start" class="primary" type="button">Start the demo</button>
+      <p class="hint narrow-only">Works best on a laptop or desktop.</p>
+    </section>
+
+    <section class="state" data-state="starting" hidden>
+      <div class="working">
+        <span class="spinner" aria-hidden="true"></span>
+        <h1 class="js-heading" tabindex="-1" id="working-title">Starting your session...</h1>
+      </div>
+      <p class="lead muted" id="working-text">This takes a few seconds. Keep this tab open.</p>
+    </section>
+
+    <section class="state" data-state="incomplete" hidden>
+      <h1 class="js-heading" tabindex="-1">This link is incomplete</h1>
+      <p class="lead">Part of the link seems to be missing. Open it again from the email, or ask for a new one.</p>
+      <a class="secondary js-mailto" data-reason="incomplete" href="#">Request a new link</a>
+    </section>
+
+    <section class="state" data-state="expired" hidden>
+      <h1 class="js-heading" tabindex="-1">This link has expired</h1>
+      <p class="lead">Demo links work for a limited time, and this one has run out.</p>
+      <a class="secondary js-mailto" data-reason="expired" href="#">Request a new link</a>
+    </section>
+
+    <section class="state" data-state="limit" hidden>
+      <h1 class="js-heading" tabindex="-1">This link has been used up</h1>
+      <p class="lead">Each demo link can start a limited number of sessions, and this one has reached its limit.</p>
+      <a class="secondary js-mailto" data-reason="limit" href="#">Request a new link</a>
+    </section>
+
+    <section class="state" data-state="invalid" hidden>
+      <h1 class="js-heading" tabindex="-1">This link is not valid</h1>
+      <p class="lead">The link could not be verified. It may have been changed or cut off on the way.</p>
+      <a class="secondary js-mailto" data-reason="invalid" href="#">Request a new link</a>
+    </section>
+
+    <section class="state" data-state="busy" hidden>
+      <h1 class="js-heading" tabindex="-1">The demo is busy right now</h1>
+      <p class="lead">The server could not start your session. Please try again in a minute.</p>
+      <button id="retry" class="primary" type="button">Try again</button>
+    </section>
+
+  </main>
+
+  <footer class="disclosure">
+    <span class="ai-badge">AI</span>
+    <span>Jonas is an AI agent built by the Webfuse team, not a person. Everything he does happens live in the browser session you start.</span>
+  </footer>
+
+  <noscript><p class="noscript">This page needs JavaScript to start the demo.</p></noscript>
+</div>
+</body>
+</html>
