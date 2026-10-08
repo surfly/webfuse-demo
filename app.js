@@ -173,7 +173,7 @@
     }).then(function (outcome) {
       window.clearTimeout(timer);
       if (outcome.state === 'go') {
-        setWorking('Opening your session...', 'Jonas will be waiting for you there.');
+        setWorking('Opening your session...', 'Victor will be waiting for you there.');
         window.location.assign(outcome.link);
         return;
       }
