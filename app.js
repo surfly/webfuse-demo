@@ -80,7 +80,10 @@
       company: clean(data.c, 80),
       domain: domain,
       linkId: clean(data.id, 40),
-      exp: data.exp
+      exp: data.exp,
+      // Which avatar the link starts: Arthur (Anam) when the token says so,
+      // otherwise Victor (Tavus), as for every link minted before Arthur.
+      agent: data.a === 'anam' ? 'Arthur' : 'Victor'
     };
   }
 
@@ -173,7 +176,7 @@
     }).then(function (outcome) {
       window.clearTimeout(timer);
       if (outcome.state === 'go') {
-        setWorking('Opening your session...', 'Victor will be waiting for you there.');
+        setWorking('Opening your session...', agentName() + ' will be waiting for you there.');
         window.location.assign(outcome.link);
         return;
       }
@@ -182,7 +185,13 @@
     });
   }
 
+  function agentName() { return (payload && payload.agent) || 'Victor'; }
+
   function fill() {
+    var agents = document.querySelectorAll('.js-agent');
+    for (var a = 0; a < agents.length; a++) { agents[a].textContent = agentName(); }
+    var initials = document.querySelectorAll('.js-agent-initial');
+    for (var k = 0; k < initials.length; k++) { initials[k].textContent = agentName().charAt(0); }
     var name = payload && payload.firstName;
     document.getElementById('greeting').textContent = name ? 'Hi ' + name + '.' : 'Hi there.';
     var domains = document.querySelectorAll('.js-domain');
