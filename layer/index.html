@@ -334,31 +334,39 @@ h3{font-size:20px;line-height:1.3;letter-spacing:-.012em;font-weight:680}
 }
 @media (max-width:860px){.stage-wrap{--s:.82}}
 @media (max-width:760px){
-  .hero{padding:0 16px}.band{padding:64px 16px}.foot{padding:32px 16px 44px}
-  .brand{height:60px}
-  .hero-grid{padding:12px 0 40px;gap:30px}
-  h1{font-size:clamp(34px,10vw,44px);margin-bottom:18px}
+  .hero{padding:0 16px;min-height:0}.band{padding:56px 16px}.foot{padding:32px 16px 44px}
+  /* Phones: a compact head, then the drawing on the first screen. The three
+     planes stack in ONE frame, each new one on top of the last (the layer
+     lines up with the site's own fields, the call lands over the bottom),
+     and only the current label shows above it. */
+  .brand{height:52px}
+  .brand .logo{height:24px}
+  .hero .eyebrow{display:none}
+  .hero-grid{padding:2px 0 34px;gap:14px}
+  h1{font-size:clamp(28px,8.4vw,36px);margin-bottom:10px}
   .nw{white-space:normal}
-  .lede{font-size:17px}
+  .lede{font-size:15px;line-height:1.5}
   .stage-wrap{height:auto}
   .explode{position:static;width:auto;height:auto;margin:0;transform:none}
-  .ex-float{position:static;perspective:none;animation:none;display:flex;flex-direction:column;gap:10px}
-  .ex-scene,.ex-labels{display:contents}
-  .plane{position:relative;left:auto;top:auto;width:100%;height:auto;transform:none;animation:none}
-  .p1{order:2}.p2{order:4}.p3{order:6}
-  .lab{position:static;transform:none;margin-top:16px}
-  .lab1{order:1;margin-top:0}.lab2{order:3}.lab3{order:5}
+  .ex-float{position:relative;perspective:none;animation:none!important;display:flex;flex-direction:column;gap:10px}
+  .ex-labels{order:-1;position:relative;height:26px}
+  .lab{position:absolute;left:0;top:0;transform:none}
   .lab-dot,.lab-line{display:none}
   .lab-box{width:auto}
+  .js .hero.g2 .lab1,.js .hero.g3 .lab2{display:none}
+  .ex-scene{position:relative;left:auto;top:auto;width:auto;height:auto;padding-bottom:30px;transform:none!important;animation:none!important}
+  .plane{position:relative;left:auto;top:auto;width:100%;height:auto;transform:none!important}
+  .p2{position:absolute;left:0;right:0;top:0;bottom:30px}
+  .js .hero.g2 .p2{animation:fade .5s ease both!important}
+  .p3{position:absolute;left:14px;right:14px;top:auto;bottom:0;width:auto;height:auto}
+  .js .hero.g3 .p3{animation:rise .5s var(--out) both!important}
   .site,.call{position:relative;inset:auto}
-  .grid{grid-template-columns:1fr}
+  .grid{grid-template-columns:1fr;gap:10px}
   .site-body{padding-bottom:18px}
-  .wire{padding-bottom:60px}
-  .wire .site-bar{height:18px}
-  .wire .site-steps,.wire .site-foot,.wire .fld:not(.f-tgt){display:none}
+  .inp{height:32px}
   .beam{display:none}
-  .hero.rewind .p2,.hero.rewind .p3{animation:none}
-  .call{gap:9px}
+  .call{gap:7px;padding:10px 12px;box-shadow:0 -10px 30px -6px rgba(0,0,0,.7),0 0 40px -10px rgba(139,123,255,.55)}
+  .call .bub{font-size:12.5px}
   .sp .ill{height:172px}
   .step h3,.sp h3{font-size:19px}
 }
@@ -492,11 +500,11 @@ h3{font-size:20px;line-height:1.3;letter-spacing:-.012em;font-weight:680}
   <div class="wrap">
     <p class="eyebrow">Proof, on a real legacy portal</p>
     <h2>A credit union's business banking signup.</h2>
-    <p class="proof-sub">At a hackathon in Redmond, an outside agent drove a live Webfuse session through the whole journey. The portal itself was not changed.</p>
+    <p class="proof-sub">At a hackathon in Redmond, an outside agent drove a live Webfuse session through the whole journey: legacy forms behind single sign-on, no API, and the portal itself unchanged.</p>
     <div class="stats" role="list">
-      <div class="stat" role="listitem"><div class="card"><b class="grad">120+ clicks</b><span>In the signup journey, across legacy forms behind single sign-on.</span></div></div>
-      <div class="stat" role="listitem"><div class="card"><b class="grad">No API</b><span>Only the web app the credit union's customers already use.</span></div></div>
-      <div class="stat" role="listitem"><div class="card"><b class="grad">28 fields in about 30 seconds</b><span>Filled by the agent, every step verified, run after run.</span></div></div>
+      <div class="stat" role="listitem"><div class="card"><b class="grad">25 fields, 170 clicks</b><span>A complex journey through the bank's own web app, with no API to call.</span></div></div>
+      <div class="stat" role="listitem"><div class="card"><b>8 minutes</b><span>For an experienced human agent, by hand.</span></div></div>
+      <div class="stat" role="listitem"><div class="card"><b class="grad">30 seconds</b><span>For a virtual agent working through Webfuse.</span></div></div>
     </div>
   </div>
 </section>
@@ -561,9 +569,11 @@ h3{font-size:20px;line-height:1.3;letter-spacing:-.012em;font-weight:680}
     heroAuto: [0, 500, 1500, 2700],    // no agent: copy, tilt, layer, call play by themselves
     agentWait: 1500,                   // how long to look for a demo agent before playing alone
     autoSpectrum: [150, 750, 1350],    // on scroll: agent bubble, caller bubble, Augmented lights up
-    beatSpectrum: [300, 1500, 3000],   // data-fde-beat="position"
+    beatSpectrum: [300, 1500, 8000],   // data-fde-beat="position"; position-2 lights s3 on "With it"
     beatSteps: [1500, 4500, 7500, 10500], // data-fde-beat="how": step 1, 2, 3 light up, then settle
-    beatStats: [500, 5400, 8400, 12500],  // data-fde-beat="proof": stat 1, 2, 3 light up, then settle
+    beatStats: [4700, 7900, 11100, 16000], // "proof" without proof-1..3 (an older card): timed
+    stageWait: 1500,                   // how long "proof" waits for proof-0 before playing timed
+    settleAfter: 6000,                 // after proof-3, all three cards back to normal
     demoGrace: 1200                    // during a demo, scroll autoplay waits this long for a beat
   };
 
@@ -629,6 +639,25 @@ h3{font-size:20px;line-height:1.3;letter-spacing:-.012em;font-weight:680}
       list.classList.remove('beat');
     });
   };
+  // One card lit, the others dimmed (n = 0: all dimmed), driven by the
+  // narration's proof-0..3 steps.
+  Lights.prototype.to = function (n) {
+    var list = this.list;
+    this.seq.clear();
+    list.played = true;
+    list.classList.add('in', 'beat');
+    each(this.items, function (li, i) {
+      li.classList.toggle('lit', i === n - 1);
+      li.classList.toggle('dim', i !== n - 1);
+    });
+  };
+  Lights.prototype.settle = function (ms) {
+    var list = this.list, items = this.items;
+    this.seq.at(ms, function () {
+      each(items, function (li) { li.classList.remove('lit', 'dim'); });
+      list.classList.remove('beat');
+    });
+  };
   var steps = document.querySelector('.steps');
   var stepLights = new Lights(steps, '.step');
   var stats = document.querySelector('.stats');
@@ -673,6 +702,7 @@ h3{font-size:20px;line-height:1.3;letter-spacing:-.012em;font-weight:680}
   // The demo sets data-fde-beat on <html> when a narrated beat starts, and
   // layer-1..3 while the layer beat's line is spoken. The hero steps follow
   // even with reduced motion (they only show and hide); the replays do not.
+  var proofFallback = null;
   function onBeat(beat) {
     // An older card does not mark the page or send layer-1..3: show it all.
     var staged = root.hasAttribute('data-fde-agent');
@@ -684,9 +714,20 @@ h3{font-size:20px;line-height:1.3;letter-spacing:-.012em;font-weight:680}
       default: break;
     }
     heroTo(3);
+    var m = /^proof-([0-3])$/.exec(beat || '');
+    if (m) {
+      clearTimeout(proofFallback);
+      statLights.to(+m[1]);
+      if (m[1] === '3') { statLights.settle(T.settleAfter); }
+      return;
+    }
+    if (beat === 'position-2') { specSeq.clear(); STATES.forEach(function (c) { spec.classList.add(c); }); return; }
     if (reduce) { return; }
     if (beat === 'position') { playSpectrum(T.beatSpectrum); }
-    if (beat === 'proof') { statLights.play(T.beatStats); }
+    if (beat === 'proof') {
+      clearTimeout(proofFallback);
+      proofFallback = setTimeout(function () { statLights.play(T.beatStats); }, T.stageWait);
+    }
     if (beat === 'how') { stepLights.play(T.beatSteps); }
   }
   if ('MutationObserver' in window) {
