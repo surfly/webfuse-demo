@@ -104,6 +104,7 @@
   }
 
   function show(state, moveFocus) {
+    document.body.setAttribute('data-state', state);
     current = state;
     var sections = document.querySelectorAll('.state');
     for (var i = 0; i < sections.length; i++) {
@@ -150,7 +151,7 @@
   function start() {
     if (starting || !token) { return; }
     starting = true;
-    setWorking('Starting your session...', 'This takes a few seconds. Keep this tab open.');
+    setWorking('Starting your demo with ' + agentName() + '...', 'This takes a few seconds. Keep this tab open.');
     show('starting', true);
 
     var ctrl = typeof AbortController === 'function' ? new AbortController() : null;
@@ -209,6 +210,24 @@
     }
   }
 
+  // A valid link starts the demo straight away (Nicholas, 2026-10-09): the
+  // visitor already chose to open it, and the agent's own Start button in
+  // the session is the click the browser needs for sound. Two exceptions
+  // keep the Start button: an automated browser (mail security scanners
+  // open links in one, which would spend a start and a session), and a tab
+  // nobody is looking at yet (opened in the background), which starts when
+  // it becomes visible.
+  function autoStart() {
+    if (navigator.webdriver) { show('ready', false); return; }
+    if (document.visibilityState === 'visible') { start(); return; }
+    show('ready', false);
+    document.addEventListener('visibilitychange', function onVisible() {
+      if (document.visibilityState !== 'visible') { return; }
+      document.removeEventListener('visibilitychange', onVisible);
+      if (current === 'ready' && !starting) { start(); }
+    });
+  }
+
   function init() {
     fill();
     document.getElementById('start').addEventListener('click', start);
@@ -219,7 +238,7 @@
     } else if (payload.exp * 1000 <= Date.now()) {
       show('expired', false);
     } else {
-      show('ready', false);
+      autoStart();
     }
 
     // Coming back with the Back button can restore this page from the

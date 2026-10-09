@@ -67,6 +67,7 @@ body {
 .top { display: flex; align-items: center; gap: 10px; }
 
 .wordmark { font-weight: 700; font-size: 18px; letter-spacing: -.01em; }
+.top .logo { display: block; height: 24px; width: auto; color: var(--ink, currentColor); }
 
 .tag {
   font-size: 12px;
@@ -120,6 +121,15 @@ h1 {
 
 h1:focus { outline: none; }
 h1:focus-visible { outline: 3px solid var(--focus); outline-offset: 4px; border-radius: 4px; }
+/* Headings take focus programmatically when the state changes (for screen
+   readers); that is not a keyboard focus, so no ring. */
+h1[tabindex="-1"]:focus-visible { outline: none; }
+
+/* Starting (the usual view now that valid links start by themselves): a
+   light screen, no card, one line and a spinner. */
+body[data-state="starting"] .card { background: none; border: 0; box-shadow: none; padding: 8px 0; }
+body[data-state="starting"] .working h1 { font-size: 22px; }
+body[data-state="starting"] .lead { font-size: 15px; margin-bottom: 0; }
 
 .lead { font-size: 18px; margin: 0 0 24px; }
 
