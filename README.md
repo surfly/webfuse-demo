@@ -14,4 +14,6 @@ Static HTML, CSS and JavaScript: no build step, no third-party scripts, no track
 
 ## `layer/`: the concept page
 
-`layer/index.html` is the page a demo session opens on: "Keep the website. Add the layer." It shows the Webfuse augmentation layer for voice agents (three layers, the position between a voice that only describes a screen and a caller on their own, three steps in a call). Victor narrates it at the start of the demo; his card finds its headings and labels by their visible text, so keep those strings stable. When the demo plays a beat it sets `data-fde-beat` on `<html>`, and the page replays the matching animation. One self-contained file: no external requests.
+`layer/index.html` is the page a demo session opens on: "Keep the website. Add the layer." It shows the Webfuse augmentation layer for voice agents (three layers, the position between a voice that only describes a screen and a caller on their own, the Redmond proof on a credit union's signup, three steps in a call). Victor narrates it at the start of the demo; his card finds its headings, labels and numbers by their visible text, so keep those strings stable.
+
+The demo card marks the page with `data-fde-agent` and sets `data-fde-beat` on `<html>` as it plays: the hero opens black and unfolds with the narration (`greeting`, then `layer-1` to `layer-3`), and later beats replay their section's animation. Opened without the demo, the hero plays by itself after a moment. One self-contained file (logo and icon inline): no external requests.
