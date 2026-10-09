@@ -295,6 +295,12 @@ h3{font-size:20px;line-height:1.3;letter-spacing:-.012em;font-weight:680}
 .stat .card::after{content:"";position:absolute;inset:-1px;border-radius:21px;pointer-events:none;border:1px solid rgba(94,230,255,.55);box-shadow:0 26px 70px -30px rgba(94,230,255,.55);opacity:0;transition:opacity .5s ease}
 .stat.lit .card::after{opacity:1}
 .stat.lit{transform:translateY(-6px)}
+.stat-vs .card{display:grid;gap:14px}
+.vs b{margin-bottom:4px}
+.vs .slow{color:var(--mute)}
+.vs-fast{transition:opacity .4s ease}
+.js .stat-vs:not(.fast-on) .vs-fast{opacity:.35}
+.stats:not(.beat) .stat-vs .vs-fast{opacity:1}
 
 /* footer */
 .foot{padding:36px 64px 56px;border-top:1px solid var(--line)}
@@ -500,11 +506,14 @@ h3{font-size:20px;line-height:1.3;letter-spacing:-.012em;font-weight:680}
   <div class="wrap">
     <p class="eyebrow">Proof, with Microsoft FDEs</p>
     <h2>A credit union's business banking signup.</h2>
-    <p class="proof-sub">At a hackathon in Redmond, together with a team of FDEs at Microsoft, we automated this complex journey: an outside agent drove a live Webfuse session through legacy forms behind single sign-on, no API, and the portal itself unchanged.</p>
+    <p class="proof-sub">In Redmond, together with a team of FDEs at Microsoft, we automated this journey: an outside agent drove a live Webfuse session through the bank's own web app, which was not changed.</p>
     <div class="stats" role="list">
-      <div class="stat" role="listitem"><div class="card"><b class="grad">25 fields, 170 clicks</b><span>A complex journey through the bank's own web app, with no API to call.</span></div></div>
-      <div class="stat" role="listitem"><div class="card"><b>8 minutes</b><span>For an experienced human agent, by hand.</span></div></div>
-      <div class="stat" role="listitem"><div class="card"><b class="grad">30 seconds</b><span>For a virtual agent working through Webfuse.</span></div></div>
+      <div class="stat" role="listitem"><div class="card"><b class="grad">No API</b><span>Legacy forms behind single sign-on, and nothing to call but the web app the bank's customers use.</span></div></div>
+      <div class="stat" role="listitem"><div class="card"><b class="grad">25 fields, 170 clicks</b><span>One complex journey from start to finish.</span></div></div>
+      <div class="stat stat-vs" role="listitem"><div class="card">
+        <div class="vs"><b class="slow">8 minutes</b><span>An experienced agent, by hand</span></div>
+        <div class="vs vs-fast"><b class="grad">30 seconds</b><span>A virtual agent through Webfuse</span></div>
+      </div></div>
     </div>
   </div>
 </section>
@@ -571,9 +580,9 @@ h3{font-size:20px;line-height:1.3;letter-spacing:-.012em;font-weight:680}
     autoSpectrum: [150, 750, 1350],    // on scroll: agent bubble, caller bubble, Augmented lights up
     beatSpectrum: [300, 1500, 8000],   // data-fde-beat="position"; position-2 lights s3 on "With it"
     beatSteps: [1500, 4500, 7500, 10500], // data-fde-beat="how": step 1, 2, 3 light up, then settle
-    beatStats: [4700, 7900, 11100, 16000], // "proof" without proof-1..3 (an older card): timed
+    beatStats: [6500, 8000, 11400, 18000], // "proof" without proof-1..4 (an older card): timed
     stageWait: 1500,                   // how long "proof" waits for proof-0 before playing timed
-    settleAfter: 6000,                 // after proof-3, all three cards back to normal
+    settleAfter: 6000,                 // after proof-4, all three cards back to normal
     demoGrace: 1200                    // during a demo, scroll autoplay waits this long for a beat
   };
 
@@ -714,11 +723,17 @@ h3{font-size:20px;line-height:1.3;letter-spacing:-.012em;font-weight:680}
       default: break;
     }
     heroTo(3);
-    var m = /^proof-([0-3])$/.exec(beat || '');
+    var m = /^proof-([0-4])$/.exec(beat || '');
     if (m) {
       clearTimeout(proofFallback);
+      var vs = document.querySelector('.stat-vs');
+      if (m[1] === '4') {
+        vs.classList.add('fast-on');
+        statLights.settle(T.settleAfter);
+        return;
+      }
+      vs.classList.remove('fast-on');
       statLights.to(+m[1]);
-      if (m[1] === '3') { statLights.settle(T.settleAfter); }
       return;
     }
     if (beat === 'position-2') { specSeq.clear(); STATES.forEach(function (c) { spec.classList.add(c); }); return; }
