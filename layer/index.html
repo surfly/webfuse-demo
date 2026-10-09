@@ -341,10 +341,10 @@ h3{font-size:20px;line-height:1.3;letter-spacing:-.012em;font-weight:680}
 @media (max-width:860px){.stage-wrap{--s:.82}}
 @media (max-width:760px){
   .hero{padding:0 16px;min-height:0}.band{padding:56px 16px}.foot{padding:32px 16px 44px}
-  /* Phones: a compact head, then the drawing on the first screen. The three
-     planes stack in ONE frame, each new one on top of the last (the layer
-     lines up with the site's own fields, the call lands over the bottom),
-     and only the current label shows above it. */
+  /* Phones: a compact head, then the three planes as cards in a column
+     (the website, the Webfuse layer, the call), each with its label above
+     it and clear space between them, so the narration visibly jumps from
+     one card to the next. */
   .brand{height:52px}
   .brand .logo{height:24px}
   .hero .eyebrow{display:none}
@@ -354,25 +354,25 @@ h3{font-size:20px;line-height:1.3;letter-spacing:-.012em;font-weight:680}
   .lede{font-size:15px;line-height:1.5}
   .stage-wrap{height:auto}
   .explode{position:static;width:auto;height:auto;margin:0;transform:none}
-  .ex-float{position:relative;perspective:none;animation:none!important;display:flex;flex-direction:column;gap:10px}
-  .ex-labels{order:-1;position:relative;height:26px}
-  .lab{position:absolute;left:0;top:0;transform:none}
+  .ex-float{position:static;perspective:none;animation:none!important;display:flex;flex-direction:column;gap:12px}
+  .ex-scene,.ex-labels{display:contents}
+  .plane{position:relative;left:auto;top:auto;width:100%;height:auto;transform:none!important;animation:none}
+  .p1{order:2}.p2{order:4}.p3{order:6}
+  .lab{position:static;transform:none;margin-top:44px}
+  .lab1{order:1;margin-top:0}.lab2{order:3}.lab3{order:5}
   .lab-dot,.lab-line{display:none}
   .lab-box{width:auto}
-  .js .hero.g2 .lab1,.js .hero.g3 .lab2{display:none}
-  .ex-scene{position:relative;left:auto;top:auto;width:auto;height:auto;padding-bottom:30px;transform:none!important;animation:none!important}
-  .plane{position:relative;left:auto;top:auto;width:100%;height:auto;transform:none!important}
-  .p2{position:absolute;left:0;right:0;top:0;bottom:30px}
   .js .hero.g2 .p2{animation:fade .5s ease both!important}
-  .p3{position:absolute;left:14px;right:14px;top:auto;bottom:0;width:auto;height:auto}
   .js .hero.g3 .p3{animation:rise .5s var(--out) both!important}
   .site,.call{position:relative;inset:auto}
-  .grid{grid-template-columns:1fr;gap:10px}
+  .grid{grid-template-columns:1fr}
   .site-body{padding-bottom:18px}
-  .inp{height:32px}
+  .wire{padding-bottom:60px}
+  .wire .site-bar{height:18px}
+  .wire .site-steps,.wire .site-foot,.wire .fld:not(.f-tgt){display:none}
   .beam{display:none}
-  .call{gap:7px;padding:10px 12px;box-shadow:0 -10px 30px -6px rgba(0,0,0,.7),0 0 40px -10px rgba(139,123,255,.55)}
-  .call .bub{font-size:12.5px}
+  .call{gap:9px}
+  .stats{gap:40px}
   .sp .ill{height:172px}
   .step h3,.sp h3{font-size:19px}
 }
