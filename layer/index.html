@@ -181,6 +181,12 @@ h1{font-size:clamp(40px,4vw,58px);line-height:1.05;letter-spacing:-.035em;font-w
 .js .hero .wave i:nth-child(4){animation-delay:1.85s}.js .hero .wave i:nth-child(5){animation-delay:1.72s}
 .js .hero .ex-float{animation-delay:1.6s}
 
+/* the card the narration is on (act1..3): a ring and a glow */
+.site,.glass,.call{transition:box-shadow .45s ease,opacity .45s ease,transform .45s var(--out)}
+.js .hero.act1 .p1 .site:not(.wire){box-shadow:0 0 0 3px rgba(94,230,255,.95),0 0 56px rgba(94,230,255,.45),0 46px 80px -26px rgba(0,0,0,.95)}
+.js .hero.act2 .glass{box-shadow:0 0 0 3px rgba(94,230,255,.95),0 0 70px rgba(94,230,255,.55)}
+.js .hero.act3 .call{box-shadow:0 0 0 3px rgba(180,169,255,.95),0 0 60px rgba(139,123,255,.6)}
+
 /* ---------- shared section frame ---------- */
 .band{position:relative;padding:88px 64px}
 .wrap{max-width:1120px;margin:0 auto}
@@ -373,6 +379,10 @@ h3{font-size:20px;line-height:1.3;letter-spacing:-.012em;font-weight:680}
   .beam{display:none}
   .call{gap:9px}
   .stats{gap:40px}
+  /* the active card comes forward, the ones before it step back */
+  .plane{transition:opacity .45s ease,transform .45s var(--out)}
+  .js .hero.act1 .p1,.js .hero.act2 .p2,.js .hero.act3 .p3{transform:scale(1.03)!important}
+  .js .hero.act2 .p1,.js .hero.act3 .p1,.js .hero.act3 .p2{opacity:.45}
   .sp .ill{height:172px}
   .step h3,.sp h3{font-size:19px}
 }
@@ -598,6 +608,16 @@ h3{font-size:20px;line-height:1.3;letter-spacing:-.012em;font-weight:680}
   function heroTo(n) {
     heroSeq.clear();
     G.forEach(function (c, i) { hero.classList.toggle(c, i <= n); });
+    // act1..3: the card the narration is on, highlighted.
+    [1, 2, 3].forEach(function (k) { hero.classList.toggle('act' + k, k === n); });
+  }
+  // On a phone the cards stack in a column: bring the active one to the
+  // middle of the screen as its step starts.
+  function centerCard(n) {
+    if (!window.matchMedia || !window.matchMedia('(max-width:760px)').matches) { return; }
+    var card = hero.querySelector('.p' + n);
+    if (!card) { return; }
+    try { card.scrollIntoView({ block: 'center', behavior: reduce ? 'auto' : 'smooth' }); } catch (e) {}
   }
   function heroAlone() {
     T.heroAuto.forEach(function (ms, i) { heroSeq.at(ms, function () { hero.classList.add(G[i]); }); });
@@ -717,12 +737,13 @@ h3{font-size:20px;line-height:1.3;letter-spacing:-.012em;font-weight:680}
     var staged = root.hasAttribute('data-fde-agent');
     switch (staged ? beat : '') {
       case 'greeting': heroTo(0); return;
-      case 'layer': case 'layer-1': heroTo(1); return;
-      case 'layer-2': heroTo(2); return;
-      case 'layer-3': heroTo(3); return;
+      case 'layer': case 'layer-1': heroTo(1); centerCard(1); return;
+      case 'layer-2': heroTo(2); centerCard(2); return;
+      case 'layer-3': heroTo(3); centerCard(3); return;
       default: break;
     }
     heroTo(3);
+    hero.classList.remove('act3');
     var m = /^proof-([0-4])$/.exec(beat || '');
     if (m) {
       clearTimeout(proofFallback);
