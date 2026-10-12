@@ -5,6 +5,11 @@ window.DEMO_CONFIG = {
   // error code (expired, limit, invalid, busy, unavailable).
   API_URL: 'https://demo.webfuse.it/start',
 
+  // A short link (https://demo.webfuse.it/<id>) lands here as ?c=<id>. This
+  // endpoint receives POST {"c": "<id>"} and answers with the link's token
+  // or an error code (invalid, expired, busy, unavailable).
+  RESOLVE_URL: 'https://demo.webfuse.it/resolve',
+
   // The only place a returned link may send the visitor.
   ALLOWED_LINK_PREFIX: 'https://webfu.se/',
 

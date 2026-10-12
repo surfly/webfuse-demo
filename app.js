@@ -5,12 +5,17 @@
  * the signature; the start endpoint does that, counts the starts, and answers
  * with a session link. The visitor's click on "Start the demo" is what starts
  * a session, so link scanners that merely fetch the page start nothing.
+ *
+ * A short link (https://demo.webfuse.it/<id>) redirects here with ?c=<id>
+ * instead. The page first trades the id for the token at the resolve
+ * endpoint, which only looks it up, then carries on exactly as for ?t=.
  */
 (function () {
   'use strict';
 
   var cfg = window.DEMO_CONFIG || {};
   var API_URL = cfg.API_URL || 'https://demo.webfuse.it/start';
+  var RESOLVE_URL = cfg.RESOLVE_URL || 'https://demo.webfuse.it/resolve';
   var ALLOWED_PREFIX = cfg.ALLOWED_LINK_PREFIX || 'https://webfu.se/';
   var OWNER_EMAIL = cfg.OWNER_EMAIL || '';
   var OWNER_NAME = cfg.OWNER_NAME || '';
@@ -27,18 +32,26 @@
     invalid: 'is not working'
   };
 
-  var token = readToken();
+  var token = readParam('t');
   var payload = token ? decodePayload(token) : null;
+  // A short link's id, used only while there is no token yet.
+  var shortCode = token ? '' : readCode();
   var current = null;
   var starting = false;
+  var resolving = false;
 
-  function readToken() {
+  function readParam(name) {
     try {
-      var t = new URLSearchParams(window.location.search).get('t');
-      return t ? t.trim() : '';
+      var v = new URLSearchParams(window.location.search).get(name);
+      return v ? v.trim() : '';
     } catch (e) {
       return '';
     }
+  }
+
+  function readCode() {
+    var c = readParam('c');
+    return /^[A-Za-z0-9_-]{12}$/.test(c) ? c : '';
   }
 
   function bytesFromBase64url(text) {
@@ -97,7 +110,11 @@
       ''
     ];
     if (payload && payload.company) { lines.push('Company: ' + payload.company); }
-    if (payload && payload.linkId) { lines.push('Link id: ' + payload.linkId); }
+    if (payload && payload.linkId) {
+      lines.push('Link id: ' + payload.linkId);
+    } else if (shortCode) {
+      lines.push('Link id: ' + shortCode);
+    }
     return 'mailto:' + OWNER_EMAIL +
       '?subject=' + encodeURIComponent('New Webfuse demo link') +
       '&body=' + encodeURIComponent(lines.join('\n'));
@@ -186,6 +203,68 @@
     });
   }
 
+  // Accepts the resolve endpoint's answer bare ({t} / {error}) or wrapped.
+  function readResolved(status, body) {
+    if (status < 200 || status >= 300 || !body || typeof body !== 'object') {
+      return { state: 'busy' };
+    }
+    var inner = (body.result && typeof body.result === 'object') ? body.result : body;
+    if (typeof inner.t === 'string' && inner.t.length <= 4096) { return { token: inner.t }; }
+    var err = typeof inner.error === 'string' ? inner.error : null;
+    if (err === 'invalid' || err === 'expired') { return { state: err }; }
+    return { state: 'busy' };
+  }
+
+  // Trade a short link's id for its token, then carry on as for ?t=. The
+  // lookup starts nothing, so it runs at once, for scanners too.
+  function resolveCode() {
+    if (resolving || !shortCode) { return; }
+    resolving = true;
+    setWorking('Opening your demo link...', 'This takes a moment.');
+    show('starting', false);
+
+    var ctrl = typeof AbortController === 'function' ? new AbortController() : null;
+    var timer = window.setTimeout(function () { if (ctrl) { ctrl.abort(); } }, TIMEOUT_MS);
+
+    window.fetch(RESOLVE_URL, {
+      method: 'POST',
+      mode: 'cors',
+      credentials: 'omit',
+      cache: 'no-store',
+      referrerPolicy: 'no-referrer',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ c: shortCode }),
+      signal: ctrl ? ctrl.signal : undefined
+    }).then(function (resp) {
+      return resp.text().then(function (text) {
+        var body = null;
+        try { body = text ? JSON.parse(text) : null; } catch (e) { body = null; }
+        return readResolved(resp.status, body);
+      });
+    }).then(null, function () {
+      return { state: 'busy' };
+    }).then(function (outcome) {
+      window.clearTimeout(timer);
+      resolving = false;
+      if (outcome.token) {
+        var decoded = decodePayload(outcome.token);
+        if (decoded) {
+          token = outcome.token;
+          payload = decoded;
+          fill();
+          proceed();
+          return;
+        }
+        outcome = { state: 'invalid' };
+      }
+      show(outcome.state, true);
+    });
+  }
+
+  function retry() {
+    if (!token && shortCode) { resolveCode(); } else { start(); }
+  }
+
   function agentName() { return (payload && payload.agent) || 'Victor'; }
 
   function fill() {
@@ -228,11 +307,7 @@
     });
   }
 
-  function init() {
-    fill();
-    document.getElementById('start').addEventListener('click', start);
-    document.getElementById('retry').addEventListener('click', start);
-
+  function proceed() {
     if (!token || !payload) {
       show('incomplete', false);
     } else if (payload.exp * 1000 <= Date.now()) {
@@ -240,13 +315,30 @@
     } else {
       autoStart();
     }
+  }
+
+  function init() {
+    fill();
+    document.getElementById('start').addEventListener('click', start);
+    document.getElementById('retry').addEventListener('click', retry);
+
+    if (!token && shortCode) {
+      resolveCode();
+    } else {
+      proceed();
+    }
 
     // Coming back with the Back button can restore this page from the
     // back/forward cache mid-start; give the visitor a working button again.
     window.addEventListener('pageshow', function (ev) {
       if (ev.persisted && current === 'starting') {
         starting = false;
-        show('ready', false);
+        resolving = false;
+        if (token) {
+          show('ready', false);
+        } else {
+          resolveCode();
+        }
       }
     });
   }
