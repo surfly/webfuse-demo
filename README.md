@@ -1,16 +1,10 @@
-# Webfuse live demo: start page
+# Webfuse live demo
 
-The landing page for a personal Webfuse demo link of the form `https://<host>/?t=<token>`, or its short form `https://demo.webfuse.it/<link id>`, which redirects here as `?c=<link id>`.
+## The start page moved to demo.webfuse.it
 
-What it does:
+The landing page for a personal demo link is served at `https://demo.webfuse.it/` since 2026-10-12: short links are `https://demo.webfuse.it/<link id>`, full links `https://demo.webfuse.it/?t=<token>`. Its source now lives with the demo's server-side code, not in this repository; edit it there, not here.
 
-1. It reads the token from the link and shows who the demo is for and which website it runs on. The token is only decoded for display here; the page never verifies it and holds no keys. For a short link it first sends the id to the resolve endpoint (`RESOLVE_URL` in `config.js`), which only looks the token up and starts nothing.
-2. When the visitor clicks **Start the demo**, the page sends the token to the start endpoint (`API_URL` in `config.js`). The endpoint verifies the token, checks its expiry and start limit, and answers with a link to a live Webfuse session.
-3. The browser then opens that session, where Victor, an AI agent, walks the visitor through Webfuse on their own website.
-
-Expired, used up or invalid links show a clear message with a "Request a new link" email button. When the endpoint is busy or unreachable, the page offers a retry.
-
-Static HTML, CSS and JavaScript: no build step, no third-party scripts, no tracking. Deployment settings (endpoint, allowed session origin, contact address) live in `config.js`.
+The root `index.html` here only forwards links sent before the move: `?c=<link id>` goes to `https://demo.webfuse.it/<link id>`, `?t=<token>` to `https://demo.webfuse.it/?t=<token>`.
 
 ## `layer/`: the concept page
 
